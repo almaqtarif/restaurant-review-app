@@ -1,5 +1,3 @@
-console.log('Service Worker : Registered');
-
 const cacheFiles = [
 	'index.html',
 	'restaurant.html',
@@ -18,6 +16,39 @@ self.addEventListener("install", function(e) {
 			return cache.addAll(cacheFiles);
 
 			
+		})
+
+	);
+
+});
+
+//fetch service worker
+self.addEventListener('fetch', function(e) {
+
+	e.respondWith(
+
+		caches.match(e.request).then(function(response){
+			if(response) {
+				console.log('Found ', e.request, 'in cache');
+				return response;
+			}
+			else {
+				console.log('Could not find ', e.request, 'in cache, Fetching ');
+				return fetch(e.request)
+				.then(function(response) {
+					const cloneResponse = response.clone();
+					caches.open('v1').then(function(cache) {
+						cache.put(e.request, cloneResponse);
+
+					})
+
+					return response;
+				})
+				.catch(function(err) {
+					console.log(err);
+				});
+			}//end else
+
 		})
 
 	);
